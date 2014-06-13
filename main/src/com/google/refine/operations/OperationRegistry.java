@@ -34,6 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.google.refine.operations;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -74,13 +75,24 @@ public abstract class OperationRegistry {
                 op = "core/" + op; // backward compatible
             }
             
+            ArrayList<Class<? extends AbstractOperation>> al = new ArrayList<Class<? extends AbstractOperation>>();
+            al.add(com.google.refine.operations.column.ColumnAdditionOperation.class);
+            
+            ArrayList<Class<? extends AbstractOperation>> a2 = new ArrayList<Class<? extends AbstractOperation>>();
+            a2.add(com.google.refine.operations.cell.TextTransformOperation.class);
+            
+            s_opNameToClass.put("core/column-addition", al);
+            s_opNameToClass.put("core/text-transform", a2);
+            
+            
             List<Class<? extends AbstractOperation>> classes = s_opNameToClass.get(op);
             if (classes != null && classes.size() > 0) {
                 Class<? extends AbstractOperation> klass = classes.get(classes.size() - 1);
                 
                 Method reconstruct = klass.getMethod("reconstruct", Project.class, JSONObject.class);
                 if (reconstruct != null) {
-                    return (AbstractOperation) reconstruct.invoke(null, project, obj);
+                    AbstractOperation aop =  (AbstractOperation) reconstruct.invoke(null, project, obj);
+                    return aop;
                 }
             }
         } catch (Exception e) {

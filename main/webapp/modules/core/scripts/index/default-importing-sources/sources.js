@@ -127,6 +127,38 @@ ClipboardImportingSourceUI.prototype.attachUI = function(bodyDiv) {
   });
 };
 
-ClipboardImportingSourceUI.prototype.focus = function() {
+
+function HDFSImportingSourceUI(controller) {
+	  this._controller = controller;
+	}
+
+Refine.DefaultImportingController.sources.push({
+	  "label": $.i18n._('core-index-import')["hdfs"],
+	  "id": "hdfs",
+	  "uiClass": HDFSImportingSourceUI
+	});
+
+	
+HDFSImportingSourceUI.prototype.attachUI = function(bodyDiv) {
+	  var self = this;
+
+	  bodyDiv.html(DOM.loadHTML("core", "scripts/index/default-importing-sources/import-from-hdfs-form.html"));
+
+	  this._elmts = DOM.bind(bodyDiv);
+	  
+	  $('#or-import-clipboard').text($.i18n._('core-index-import')["hdfs-label"]);
+	  this._elmts.nextButton.html($.i18n._('core-buttons')["next"]);
+	  
+	  this._elmts.nextButton.click(function(evt) {
+	    if ($.trim(self._elmts.textInput[0].value).length === 0) {
+	      window.alert($.i18n._('core-index-import')["warning-clipboard"]);
+	    } else {
+	      self._controller.startImportJob(self._elmts.form, $.i18n._('core-index-import')["uploading-pasted-data"]);
+	    }
+	  });
+	};
+
+
+HDFSImportingSourceUI.prototype.focus = function() {
   this._elmts.textInput.focus();
 };

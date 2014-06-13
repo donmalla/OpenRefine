@@ -53,6 +53,29 @@ import com.google.refine.util.ParsingUtilities;
 
 public class ApplyOperationsCommand extends Command {
     
+    
+    public ApplyOperationsCommand() {
+        // TODO Auto-generated constructor stub
+    }
+    
+    public String process(Project project,String jsonString) throws JSONException {
+        
+        JSONArray a = ParsingUtilities.evaluateJsonStringToArray(jsonString);
+        int count = a.length();
+        for (int i = 0; i < count; i++) {
+            JSONObject obj = a.getJSONObject(i);
+            
+            reconstructOperation(project, obj);
+        }
+
+        if (project.processManager.hasPending()) {
+            return "pending";
+        } else {
+            return "ok";
+        }
+        
+    }
+    
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

@@ -1,0 +1,47 @@
+<div>
+<!-- 
+  <div bind="publicDocsPanel" class="ohdfs-panel">
+    <h1 id="ohdfs-title"></h1>
+    <div class="grid-layout layout-tighter"><table>
+      <tr><td colspan="2" id="ohdfs-import"></td></tr>
+      <tr bind="urlRow">
+        <td><input bind="urlInput" name="download" class="default-importing-web-url" /></td>
+        <td><button bind="urlNextButton" class="button button-primary" type="button" id="ohdfs-next"></button></td>
+      </tr>
+      
+      <tr bind="urlRow">
+        <td></td>
+        <td></td>
+      </tr>
+      
+    </table></div>
+  </div>
+  --> 
+   
+  <div bind="authorizedDocsPanel" class="ohdfs-panel">
+    <h1 id="ohdfs-title"></h1>
+    
+    <div bind="progressPage" class="ohdfs-page">
+      <p><img src="images/large-spinner.gif" /> <span id="ohdfs-retrieving"></span></p>
+    </div>
+    
+    <div bind="listingPage" class="ohdfs-page grid-layout layout-normal"><table>
+      <tr>
+        <td width="%">Database</td>
+        <td>
+        		<select name="">
+        	<option value="default">Default</option>
+        	<option value="ADT">ADT</option>
+        	<option value="LabData">Lab Data</option>
+        	<option value="Customers">Customers</option>
+        	</select>	
+         </td>
+      </tr>
+      
+      <tr><td colspan="2"><div bind="listingContainer" class="grid-layout layout-tight ohdfs-document-container"></div></td></tr>
+      
+    
+    </table></div>
+  </div>
+   
+</div>

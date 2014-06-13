@@ -81,7 +81,9 @@
 		"optional-separated": "optional, comma separated",
 		"warning-record-path": "Please specify a record path first.",
 		"pick-nodes": "Pick Record Nodes",
-		"char-encoding": "Character&nbsp;encoding"
+		"char-encoding": "Character&nbsp;encoding".
+		"hdfs": "Clipboard",
+		"hdfs-label": "Import data from HDFS Cluster",
 	},
 	"core-index-open": {
 		"open-proj" : "Open Project",

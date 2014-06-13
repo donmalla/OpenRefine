@@ -236,7 +236,7 @@ public abstract class ProjectManager {
      * Saves all projects to the data store
      * @param allModified
      */
-    protected void saveProjects(boolean allModified) {
+    public void saveProjects(boolean allModified) {
         List<SaveRecord> records = new ArrayList<SaveRecord>();
         Date startTimeOfSave = new Date();
         
