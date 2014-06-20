@@ -86,5 +86,24 @@
 	<classpathentry exported="true" kind="lib" path="main/webapp/WEB-INF/lib/commons-logging-1.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="main/webapp/WEB-INF/lib/fluent-hc-4.2.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="main/webapp/WEB-INF/lib/httpmime-4.2.5.jar"/>
+	<classpathentry kind="lib" path="extensions/ohdfs/module/conf"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/snappy-java-1.0.4.1.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hive-jdbc-0.12.0-cdh5.0.0.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hive-jdbc.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hive-service-0.12.0-cdh5.0.0.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hive-service.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/libfb303-0.9.0.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/libthrift-0.9.0.cloudera.2.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hive-common-0.12.0-cdh5.0.0.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hive-common.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hadoop-common-2.3.0-cdh5.0.0.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hadoop-common.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hadoop-core-2.3.0-mr1-cdh5.0.0.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hadoop-core.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/jackson-mapper-asl-1.9.12.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/commons-configuration-1.6.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hadoop-auth-2.3.0-cdh5.0.0.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hadoop-auth.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/protobuf-java-2.5.0.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

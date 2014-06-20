@@ -29,10 +29,19 @@
 package com.google.refine.extension.ohdfs;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONObject;
+
+
+
+
 
 
 import com.google.refine.ProjectMetadata;
@@ -150,7 +159,8 @@ public class HiveDataImporter {
         public List<Object> getNextRowOfCells() throws IOException {
             if (rowsOfCells == null || (nextRow >= batchRowStart + rowsOfCells.size() && nextRow < totalRows)) {
                 int newBatchRowStart = batchRowStart + (rowsOfCells == null ? 0 : rowsOfCells.size());
-                
+                    try
+                    {
                     rowsOfCells = getRowsOfCells(
                         hiveService,    
                         newBatchRowStart + 1, // convert to 1-based
@@ -159,7 +169,9 @@ public class HiveDataImporter {
                     batchRowStart = newBatchRowStart;
                     
                     setProgress(job, fileSource, batchRowStart * 100 / totalRows);
-                
+                    }catch(Exception e) {
+                        throw new IOException(e);
+                    }
             }
             
             if (rowsOfCells != null && nextRow - batchRowStart < rowsOfCells.size()) {
@@ -174,29 +186,40 @@ public class HiveDataImporter {
             HiveService hiveService,    
             int startRow, // 1-based
             int rowCount
-        ) throws IOException {
-            int minRow = startRow;
-            int maxRow = Math.min(hiveService.getRowCount(), startRow + rowCount - 1);
-            int cols = hiveService.getColCount();
-            int rows = hiveService.getRowCount();
+        ) throws IOException, Exception {
+            
             
             List<List<Object>> rowsOfCells = new ArrayList<List<Object>>();
+            HiveDBConnection hdb = new HiveDBConnection();
+            Connection con = hdb.getConnection();
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery("select * from CA_NORTH_DISCHARGES_2007_STG limit 50");
+            ResultSetMetaData rsMeta = rs.getMetaData();
             rowsOfCells.add(new ArrayList<Object>());
             List<Object> headerRow= rowsOfCells.get(0);
-            for(int j=0; j<10; j++)
+            
+            int minRow = startRow;
+            int maxRow = Math.min(hiveService.getRowCount(), startRow + rowCount - 1);
+            int cols = rsMeta.getColumnCount();
+            int rows = 50; //hiveService.getRowCount();
+            
+            for(int j=1; j<cols; j++)
             {
-                headerRow.add("Col " + j);
+                headerRow.add(rsMeta.getColumnName(j));
             }
-            for(int i=1; i<10; i++)
-            {
+            
+            int i=1;
+            while (rs.next()) {
                 rowsOfCells.add(new ArrayList<Object>());
                 List<Object> row = rowsOfCells.get(i);
-                for(int j=0; j<10; j++)
+                for(int j=1; j<cols; j++)
                 {
-                    row.add(Math.round(Math.random()*1000));
+                    row.add(rs.getString(j));
                 }
-                rowsOfCells.add(row);
+                i++;
+                //rowsOfCells.add(row);
             }
+            con.close();
             return rowsOfCells;
         }
     }

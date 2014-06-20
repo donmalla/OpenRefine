@@ -77,7 +77,12 @@ function init() {
     "project/scripts",
     module,
     [
-      "scripts/project-injection.js"
+      "scripts/project-injection.js",
+      "scripts/project/history-panel.js",
+      "scripts/project-injection.js",
+      "scripts/dialogs/samplerecs-loading-dialog.js",
+      "scripts/dialogs/jobstatus-loading-dialog.js"
+      
     ]
   );
 

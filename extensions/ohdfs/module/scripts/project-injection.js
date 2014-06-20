@@ -34,3 +34,136 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // This file is added to the /project page
 
 var SampleExtension = {};
+
+
+//Internationalization init
+var lang = navigator.language.split("-")[0]
+		|| navigator.userLanguage.split("-")[0];
+var dictionary = "";
+$.ajax({
+	url : "/command/core/load-language?",
+	type : "POST",
+	async : false,
+	data : {
+	  module : "freebase",
+//		lang : lang
+	},
+	success : function(data) {
+		dictionary = data;
+	}
+});
+$.i18n.setDictionary(dictionary);
+// End internationalization
+
+
+
+var OHDFSExtension = { handlers: {} };
+
+	OHDFSExtension.handlers.sampleRecords = function() {
+	  new SampleRecordsLoadingDialog();
+	};
+	
+	OHDFSExtension.handlers.hadoopJobStatus = function() {
+		  new JobStatusDialog();
+	};
+	
+
+	OHDFSExtension.handlers.scoreModels = function() {
+	  // The form has to be created as part of the click handler. If you create it
+	  // inside the getJSON success handler, it won't work.
+
+	  var form = document.createElement("form");
+	  $(form)
+	  .css("display", "none")
+	  .attr("method", "GET")
+	  .attr("target", "dataload");
+
+	  document.body.appendChild(form);
+	  var w = window.open("about:blank", "dataload");
+
+	  $.getJSON(
+	    "command/core/get-preference?" + $.param({ project: theProject.id, name: "freebase.load.jobID" }),
+	    null,
+	    function(data) {
+	      if (data.value == null) {
+	        alert($.i18n._('fb-menu')["warning-load"]);
+	      } else {
+	        $(form).attr("action", "http://refinery.freebaseapps.com/load/" + data.value);
+	        form.submit();
+	        w.focus();
+	      }
+	      document.body.removeChild(form);
+	    }
+	  );
+	};
+
+	OHDFSExtension.handlers.importQAData = function() {
+	  Refine.postProcess(
+	    "freebase-extension",
+	    "import-qa-data",
+	    {},
+	    {},
+	    { cellsChanged: true }
+	  );
+	};
+
+	
+	DataTableColumnHeaderUI.extendMenu(function(column, columnHeaderUI, menu) {
+	  var columnIndex = Refine.columnNameToColumnIndex(column.name);
+	  var doAddColumnFromFreebase = function() {
+	    var o = DataTableView.sampleVisibleRows(column);
+	    new ExtendDataPreviewDialog(
+	      column, 
+	      columnIndex, 
+	      o.rowIndices, 
+	      function(extension) {
+	        Refine.postProcess(
+	            "freebase",
+	            "extend-data", 
+	            {
+	              baseColumnName: column.name,
+	              columnInsertIndex: columnIndex + 1
+	            },
+	            {
+	              extension: JSON.stringify(extension)
+	            },
+	            { rowsChanged: true, modelsChanged: true }
+	        );
+	      }
+	    );
+	  };
+
+	  MenuSystem.insertAfter(
+	    menu,
+	    [ "core/edit-column", "core/add-column-by-fetching-urls" ],
+	    {
+	      id: "freebase/add-columns-from-freebase",
+	      label: $.i18n._('fb-menu')["add-columns"],
+	      click: doAddColumnFromFreebase
+	    }
+	  );
+	});
+
+
+
+ExtensionBar.addExtensionMenu({
+	
+	  "id" : "ohdfsext",
+	  "label" : "Open Refine - HD",
+	  "submenu" : [
+	    {
+	      "id" : "ohdfsext/sample-recs",
+	      label: "Sample Records",
+	      click: OHDFSExtension.handlers.sampleRecords
+	    },
+	    {
+	      "id" : "ohdfsext/eda",
+	      label: "Score Models",
+	      click: function() { OHDFSExtension.handlers.scoreModels; }
+	    },
+	    {
+	      "id" : "ohdfsext/hjstatus",
+	      label: "Hadoop Job Status",
+	      click: function() { OHDFSExtension.handlers.hadoopJobStatus; }
+	    }]
+	});

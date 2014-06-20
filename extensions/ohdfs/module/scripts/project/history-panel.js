@@ -31,6 +31,23 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  */
 
+
+var dictionary = "";
+$.ajax({
+	url : "/command/core/load-language?",
+	type : "POST",
+	async : false,
+	data : {
+	  module : "ohdfs",
+//		lang : lang
+	},
+	success : function(data) {
+		dictionary = data;
+	}
+});
+$.i18n.setDictionary(dictionary);
+// End internationalization
+
 function HistoryPanel(div, tabHeader) {
   this._div = div;
   this._tabHeader = tabHeader;
@@ -265,13 +282,13 @@ HistoryPanel.prototype._showExtractOperationsDialog = function(json) {
 
 HistoryPanel.prototype._showApplyOperationsDialog = function() {
   var self = this;
-  var frame = $(DOM.loadHTML("core", "scripts/project/history-apply-dialog.html"));
+  var frame = $(DOM.loadHTML("ohdfs", "scripts/project/history-apply-dialog.html"));
   var elmts = DOM.bind(frame);
   
-  elmts.dialogHeader.html($.i18n._('core-project')["apply-operation"]);
+  elmts.dialogHeader.html($.i18n._('ohdfs-apply')["apply-operation-hdfs"]);
   elmts.or_proj_pasteJson.html($.i18n._('core-project')["paste-json"]);
   
-  elmts.applyButton.html($.i18n._('core-buttons')["perform-op"]);
+  elmts.applyButton.html($.i18n._('ohdfs-apply')["perform-op-hdfs"]);
   elmts.cancelButton.html($.i18n._('core-buttons')["cancel"]);
 
   var fixJson = function(json) {
@@ -324,3 +341,16 @@ HistoryPanel.prototype._showApplyOperationsDialog = function() {
 
   elmts.textarea.focus();
 };
+
+
+$.get(
+    "command/core/importing-controller?" + $.param({
+      "controller": "ohdfs/ohdfs-importing-controller",
+      "subCommand": "real-row-cnt"
+    }),
+    null,
+    function(o) {
+    	$('#summary-bar>span').html(o["count"] + " rows");
+    },
+    "json"
+  );

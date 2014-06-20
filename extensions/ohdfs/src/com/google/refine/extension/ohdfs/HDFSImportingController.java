@@ -1,6 +1,10 @@
 package com.google.refine.extension.ohdfs;
 import java.io.IOException;
 import java.io.Writer;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -51,11 +55,68 @@ public class HDFSImportingController implements ImportingController {
            doParsePreview(request, response, parameters);
         } else if ("create-project".equals(subCommand)) {
            doCreateProject(request, response, parameters);
+        } else if ("real-row-cnt".equals(subCommand)) {
+             doGetRealCount(request, response, parameters);
+        } else if ("submit-sampling-job".equals(subCommand)) {
+            doSubmitSamplingJob(request, response, parameters);
         } else {
             HttpUtilities.respond(response, "error", "No such sub command");
         }
     }
     
+    
+    private void doSubmitSamplingJob(HttpServletRequest request, HttpServletResponse response, Properties parameters)
+            throws ServletException, IOException {
+        Writer w = response.getWriter();
+        JSONWriter writer = new JSONWriter(w);
+        try
+        {
+            HiveDBConnection hdb = new HiveDBConnection();
+            Connection con = hdb.getConnection();
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery("select count(*) from CA_NORTH_DISCHARGES_2007_STG");
+            
+            writer.object();
+            while(rs.next())
+            {
+                writer.key("count"); writer.value(rs.getLong(1));
+            }
+            writer.endObject();
+        } catch (Exception e) {
+            throw new ServletException(e);
+        } finally {
+            w.flush();
+            w.close();
+        }
+        
+    }
+    
+    
+    private void doGetRealCount(HttpServletRequest request, HttpServletResponse response, Properties parameters)
+            throws ServletException, IOException {
+        Writer w = response.getWriter();
+        JSONWriter writer = new JSONWriter(w);
+        try
+        {
+            HiveDBConnection hdb = new HiveDBConnection();
+            Connection con = hdb.getConnection();
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery("select count(*) from CA_NORTH_DISCHARGES_2007_STG");
+            
+            writer.object();
+            while(rs.next())
+            {
+                writer.key("count"); writer.value(rs.getLong(1));
+            }
+            writer.endObject();
+        } catch (Exception e) {
+            throw new ServletException(e);
+        } finally {
+            w.flush();
+            w.close();
+        }
+        
+    } 
     
     private void doCreateProject(HttpServletRequest request, HttpServletResponse response, Properties parameters)
             throws ServletException, IOException {
@@ -196,7 +257,7 @@ public class HDFSImportingController implements ImportingController {
                     writer.endArray();
                     writer.endObject();
                 }
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 throw new ServletException(e);
             } finally {
                 w.flush();
@@ -206,14 +267,19 @@ public class HDFSImportingController implements ImportingController {
     
     
     private void getHDFSTablesService(JSONWriter writer)
-            throws IOException, JSONException {
-    
-        for (int i=1; i<10; i++) {
+            throws SQLException,IOException, JSONException {
+        
+        HiveDBConnection hdb = new HiveDBConnection();
+        Connection con = hdb.getConnection();
+        Statement stmt = con.createStatement();
+        ResultSet rs = stmt.executeQuery("show tables in default");
+        int i=0;
+        while (rs.next()) {
             writer.object();
-            writer.key("docId"); writer.value("DOC-"+ i);
-            writer.key("docLink"); writer.value("LINK-"+ i);
+            writer.key("docId"); writer.value(rs.getString(1));
+            writer.key("docLink"); writer.value(rs.getString(1));
             writer.key("docSelfLink"); writer.value("SELF-LINK-"+ i);
-            writer.key("title"); writer.value("TITLE-"+ i);
+            writer.key("title"); writer.value(rs.getString(1));
             writer.key("type"); writer.value("table");
             
             writer.key("updated"); writer.value("2 Days ago");
@@ -222,9 +288,10 @@ public class HDFSImportingController implements ImportingController {
             writer.value("Person "+ i);
             
             writer.endArray();
-            
+
             writer.endObject();
         }
+        
     }
     
     private void doInitializeParserUI(

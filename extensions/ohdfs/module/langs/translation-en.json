@@ -49,8 +49,8 @@
 		"new-fusion": "A new Google Fusion table",
 		"enter-fusion": "Enter a name for the new Google Fusion table"
 	},
-	"ohdfs-auth": {
-		"authorize-label": "OpenRefine - Authorization",
-		"authorized-label": "Authorization process completed. Close this window and return to OpenRefine."
+	"ohdfs-apply": {
+		"apply-operation-hdfs": "Apply transformations on HDFS ",
+		"perform-op-hdfs":"Perform operations on HDFS"
 	}
 }
