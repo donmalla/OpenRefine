@@ -68,4 +68,9 @@
     <target name="clean">
         <delete dir="${classes.dir}" />
     </target>
+    
+    <target name="hadoop_jar" depends="build">
+            <jar destfile="${build.dir}/ohdfs-hadoop.jar" basedir="${classes.dir}"/>
+    </target>
+    
 </project>

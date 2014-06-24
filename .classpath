@@ -105,5 +105,8 @@
 	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hadoop-auth-2.3.0-cdh5.0.0.jar"/>
 	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hadoop-auth.jar"/>
 	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/protobuf-java-2.5.0.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hadoop-hdfs-2.3.0-cdh5.0.0.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/hadoop-hdfs.jar"/>
+	<classpathentry kind="lib" path="main/webapp/WEB-INF/lib/commons-cli-1.2.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
