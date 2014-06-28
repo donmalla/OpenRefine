@@ -31,53 +31,66 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  */
 
+
+$(function() {
+	
+  var cssLink = $("<link rel='stylesheet' type='text/css' href='extension/ohdfs/styles/flexigrid.css'>");
+  $("head").append(cssLink);  
+  $.getScript("/extension/ohdfs/styles/flexigrid.js", function(){ });
+});
+
+
+
 function JobStatusDialog() {
   this._createDialog();
   this._signedin = false;
+  	
 }
 
 JobStatusDialog.prototype._createDialog = function() {
   var self = this;
   var dialog = $(DOM.loadHTML("ohdfs", "scripts/dialogs/jobstatus-loading-dialog.html"));
   this._elmts = DOM.bind(dialog);
-  this._elmts.cancelButton.click(function() { self._dismiss(); });
+  this._elmts.cancelButton.click(function() { DialogSystem.dismissAll();  });
 
-  this._elmts.dialogHeader.text("Sampling Setup");
+  this._elmts.dialogHeader.text("Hadoop - Job Status");
   this._elmts.cancelButton.text($.i18n._('fb-buttons')["cancel"]);
-  this._elmts.okButton.text("Submit Sampling Request");
-  
-  this._elmts.sampleTypes.change(function() {
-	  if ($('#sampleTypes').val()=="SBT")
-		  {
-		  		$('#row1').show();
-		  		$('#row2').show();
-		  		$('#row3').hide();
-		  		
-		  }else 
-		  {
-			    $('#row1').hide();
-		  		$('#row2').hide();
-		  		$('#row3').show();
-		  }
-  });
-  
-  this._elmts.okButton.click(function() { 
-	  // Submit Sampling Job.
-	  $.post(
-		    "command/core/importing-controller?" + $.param({
-		      "controller": "ohdfs/ohdfs-importing-controller",
-		      "subCommand": "submit-sampling-job"
-		    }),
-		    null,
-		    function(o) {
-		      self._renderDocuments(o);
-		    },
-		    "json"
-		  );
-  });
-  
+/*
+  this._elmts.cancelButton.click(function() { 
+	// DialogSystem.dismiss();
+	$('.dialog-container').hide();
+  	});
+*/	
   this._level = DialogSystem.showDialog(dialog);
+  $.get(
+      "/command/core/importing-controller?controller=ohdfs/ohdfs-importing-controller&subCommand=hdfs-job-status", 
+      null,
+      function(data) {
+         	var jobs = data["jobs"]["job"];
+		for(var i=0; i<jobs.length; i++)
+		{
+			var job = jobs[i];
+			var vStatus = (i%2==0?"even":"odd");
+		        $('#jobStatusTbl > tbody:last').append('<tr class="' + vStatus + '">' +
+				'<td><div>' + i + '</div></td>' +
+				'<td><div class="data-table-cell-content"> <span>' + job.id + '</span> </div></td>'+
+				'<td><div class="data-table-cell-content"> <span>' + job.name + '</span> </div></td>'+
+				'<td><div class="data-table-cell-content"> <span>' + job.startTime + '</span> </div></td>'+
+				'<td><div class="data-table-cell-content"> <span>' + job.finishTime + '</span> </div></td>'+
+				'<td><div class="data-table-cell-content"> <span>' + job.state + '</span> </div></td>'+
+				'<td><div class="data-table-cell-content"> <a href="#">Create Hive Table </a> &nbsp; <a href=""> Download File </a> </div></td>'+
+			'</tr>');	
+		}
+	
+		$("#jobStatusTbl th").each(function() {
+  			$(this).attr("width", $(this).width());
+		});
+	
+  		$('#jobStatusTbl').flexigrid();
+	  },
+      "json"
+  );
+  
   
 };  
-
 

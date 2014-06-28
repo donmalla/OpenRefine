@@ -1,5 +1,7 @@
 package com.google.refine.extension.ohdfs;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Writer;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -13,6 +15,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONWriter;
@@ -59,11 +65,121 @@ public class HDFSImportingController implements ImportingController {
              doGetRealCount(request, response, parameters);
         } else if ("submit-sampling-job".equals(subCommand)) {
             doSubmitSamplingJob(request, response, parameters);
-        } else {
+        } else if ("apply-transforms-hdfs".equals(subCommand)) {
+            doApplyTransformsHDFS(request, response, parameters);
+        } else if ("hdfs-job-status".equals(subCommand)) {
+            doShowJobStatus(request, response, parameters);
+        }  else {
             HttpUtilities.respond(response, "error", "No such sub command");
         }
     }
     
+    
+    private void doShowJobStatus(
+            HttpServletRequest request, HttpServletResponse _response, Properties parameters)
+                throws ServletException, IOException {
+        
+        Writer w = _response.getWriter();
+        _response.setContentType("application/json");
+        try {
+            
+            DefaultHttpClient httpClient = new DefaultHttpClient();
+            HttpGet getRequest = new HttpGet(
+                    "http://localhost.localdomain:19888/ws/v1/history/mapreduce/jobs?startedTimeBegin=1403901799846");
+            getRequest.addHeader("accept", "application/json");
+
+            HttpResponse response = httpClient.execute(getRequest);
+            
+
+            if (response.getStatusLine().getStatusCode() != 200) {
+                    throw new RuntimeException("Failed : HTTP error code : "
+                       + response.getStatusLine().getStatusCode());
+            }
+
+            BufferedReader br = new BufferedReader(
+                     new InputStreamReader((response.getEntity().getContent())));
+
+            String output;
+            System.out.println("Output from Server .... \n");
+            while ((output = br.readLine()) != null) {
+                    System.out.println(output);
+                    w.write(output);
+            }
+
+            httpClient.getConnectionManager().shutdown();
+
+      } catch (Exception e) {
+            e.printStackTrace();
+            throw new ServletException(e);
+      } finally {
+              w.flush();
+              w.close();
+      }
+        
+    }
+    
+    private void doApplyTransformsHDFS(
+            HttpServletRequest request, HttpServletResponse response, Properties parameters)
+                throws ServletException, IOException {
+            
+            String jobID = request.getParameter("jobID"); 
+            String jsonOp = request.getParameter("jsonOp");
+            String fileName="rain.txt";
+            //in/rain/rain.txt output19992B
+            String inputPath="in/rain/"+fileName;
+            String outputPath="output/"+ fileName + "_" +  jobID+"_"+System.currentTimeMillis();
+            String projectPath="/tmp/openrefine";
+            try
+            {
+                    String line="";
+                    String cmd = "/usr/bin/hadoop jar /tmp/openrefinehd.jar " +
+                            " com.google.refine.extension.ohdfs.hadoop.ApplyJobMapperDriver " +
+                            " " + inputPath +  " "+ outputPath + 
+                            " " + projectPath + 
+                            " \"" + jsonOp.replaceAll("\"","\\\"") + "\"";
+                    System.out.println("Hadoop Cmd: " + cmd);
+                    Process p = Runtime.getRuntime().exec(cmd);
+                    BufferedReader bri = new BufferedReader
+                        (new InputStreamReader(p.getInputStream()));
+                      BufferedReader bre = new BufferedReader
+                        (new InputStreamReader(p.getErrorStream()));
+                      while ((line = bri.readLine()) != null) {
+                        System.out.println(line);
+                      }
+                      bri.close();
+                      while ((line = bre.readLine()) != null) {
+                        System.out.println(line);
+                      }
+                      bre.close();
+                        
+                    p.waitFor();
+                    
+                    
+                    //
+                
+                    //Process process = 
+                    /*
+                    Job hadoopJob = ApplyJobMapperDriver.runJob(inputPath, outputPath, jsonOp, jobID, projectPath);
+        
+                    Writer w = response.getWriter();
+                    JSONWriter writer = new JSONWriter(w);
+                    writer.object();
+                        writer.key("status"); writer.value("ok");
+                        writer.key("jobID"); writer.value(jobID);
+                        writer.key("hadoopJobID"); writer.value(hadoopJob.getJobID());
+                        writer.key("hadoopJobName"); writer.value(hadoopJob.getJobName());
+                        writer.key("inputPath"); writer.value(inputPath);
+                        writer.key("outputPath"); writer.value(outputPath);
+                    writer.endObject();
+                    */
+                
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new ServletException(e);
+                } finally {
+                    
+                }
+     }
     
     private void doSubmitSamplingJob(HttpServletRequest request, HttpServletResponse response, Properties parameters)
             throws ServletException, IOException {
@@ -196,14 +312,23 @@ public class HDFSImportingController implements ImportingController {
                     request.getParameter("options"));
                 
                 List<Exception> exceptions = new LinkedList<Exception>();
-                
+                String docUrl = optionObj.getString("docUrl");
                 job.prepareNewProject();
-                
+                String strSQL="select count(*) from " + docUrl + " limit 100";
+                Connection con = HiveDBConnection.getConnection();
+                ResultSet rs = con.createStatement().executeQuery(strSQL);
+                int hiveRowcount=0;
+                while(rs.next())
+                {
+                    hiveRowcount=rs.getInt(1);
+                }
+                con.close();            
+                int limit = Math.min(hiveRowcount,100);
                 HiveDataImporter.parse(
                     job.project,
                     job.metadata,
                     job,
-                    100,
+                    limit,
                     optionObj,
                     exceptions
                 );
@@ -234,6 +359,9 @@ public class HDFSImportingController implements ImportingController {
 
             } catch (JSONException e) {
                 throw new ServletException(e);
+            } catch (SQLException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
             } finally {
                 job.touch();
                 job.updating = false;
@@ -278,7 +406,7 @@ public class HDFSImportingController implements ImportingController {
             writer.object();
             writer.key("docId"); writer.value(rs.getString(1));
             writer.key("docLink"); writer.value(rs.getString(1));
-            writer.key("docSelfLink"); writer.value("SELF-LINK-"+ i);
+            writer.key("docSelfLink"); writer.value(rs.getString(1));
             writer.key("title"); writer.value(rs.getString(1));
             writer.key("type"); writer.value("table");
             

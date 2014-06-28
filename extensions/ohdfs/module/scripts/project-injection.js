@@ -60,7 +60,7 @@ $.i18n.setDictionary(dictionary);
 var OHDFSExtension = { handlers: {} };
 
 	OHDFSExtension.handlers.sampleRecords = function() {
-	  new SampleRecordsLoadingDialog();
+	  	new SampleRecordsLoadingDialog();
 	};
 	
 	OHDFSExtension.handlers.hadoopJobStatus = function() {
@@ -159,11 +159,11 @@ ExtensionBar.addExtensionMenu({
 	    {
 	      "id" : "ohdfsext/eda",
 	      label: "Score Models",
-	      click: function() { OHDFSExtension.handlers.scoreModels; }
+	      click: OHDFSExtension.handlers.scoreModels
 	    },
 	    {
 	      "id" : "ohdfsext/hjstatus",
 	      label: "Hadoop Job Status",
-	      click: function() { OHDFSExtension.handlers.hadoopJobStatus; }
+	      click: OHDFSExtension.handlers.hadoopJobStatus
 	    }]
 	});

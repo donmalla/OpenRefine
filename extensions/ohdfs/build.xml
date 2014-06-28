@@ -28,6 +28,8 @@
 
     <property name="fullname" value="${name}-${version}-${revision}" />
     
+	
+	<property name="java_version" value="1.6" />
     <property name="refine.dir" value="${basedir}/../../main" />
     <property name="refine.webinf.dir" value="${refine.dir}/webapp/WEB-INF" />
     <property name="refine.modinf.dir" value="${refine.dir}/webapp/modules/core/MOD-INF" />
@@ -67,10 +69,38 @@
 
     <target name="clean">
         <delete dir="${classes.dir}" />
+    	<delete dir="${module.dir}/staging" />
     </target>
     
-    <target name="hadoop_jar" depends="build">
-            <jar destfile="${build.dir}/ohdfs-hadoop.jar" basedir="${classes.dir}"/>
+    <target name="hadoop_jar" depends="clean,build">
+        
+    	<mkdir dir="${module.dir}/extensions/ohdfs/staging" />
+    	<mkdir dir="${module.dir}/extensions/ohdfs/staging/lib" />
+    	
+    	<copy todir="${module.dir}/staging/lib">
+            <fileset dir="${refine.webinf.dir}/lib">
+                <include name="*.jar"/>
+            	<exclude name="*slf4j*.jar"/>
+            </fileset>
+        </copy>
+    	<copy todir="${module.dir}/staging">
+    		<fileset dir="${classes.dir}">
+                <include name="**/*.class"/>
+            </fileset>	
+    		<fileset dir="${refine.classes.dir}">
+                <include name="**/*.class"/>
+            </fileset>	
+    	</copy>
+    	
+    	<jar destfile="${module.dir}/staging/openrefinehd.jar" 
+    		basedir="${module.dir}/staging"/>
+        
+    	<copy file="${module.dir}/staging/openrefinehd.jar" tofile="/tmp/openrefinehd.jar">
+    	</copy>
+    	
+    	
     </target>
     
+	  
+	        	
 </project>

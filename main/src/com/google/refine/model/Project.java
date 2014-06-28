@@ -71,7 +71,7 @@ public class Project {
     }
     
     final public long                       id;
-    final public List<Row>                  rows = new ArrayList<Row>();
+    public List<Row>                  rows = new ArrayList<Row>();
     
     final public ColumnModel                columnModel = new ColumnModel();
     final public RecordModel                recordModel = new RecordModel();

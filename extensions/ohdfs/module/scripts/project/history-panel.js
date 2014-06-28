@@ -180,10 +180,90 @@ HistoryPanel.prototype._render = function() {
 
   elmts.extractLink.click(function() { self._extractOperations(); });
   elmts.applyLink.click(function() { self._showApplyOperationsDialog(); });
-  elmts.applyHDFSLink.click(function() { self._showApplyOperationsDialog(); });
+  elmts.applyHDFSLink.click(function() { self._showApplyHDFSOperationsDialog(); });
   
   this.resize();
 };
+
+HistoryPanel.prototype._showApplyHDFSOperationsDialog = function() {
+  var self = this;
+  var frame = $(DOM.loadHTML("ohdfs", "scripts/project/history-apply-dialog.html"));
+  var elmts = DOM.bind(frame);
+  
+  elmts.dialogHeader.html("Apply operations on your Hadoop cluster");
+  elmts.or_proj_pasteJson.html($.i18n._('core-project')["paste-json"]);
+  
+  elmts.applyButton.html("Apply on Hadoop");
+  elmts.cancelButton.html($.i18n._('core-buttons')["cancel"]);
+
+  var fixJson = function(json) {
+    json = json.trim();
+    if (!json.startsWith("[")) {
+      json = "[" + json;
+    }
+    if (!json.endsWith("]")) {
+      json = json + "]";
+    }
+
+    return json.replace(/\}\s*\,\s*\]/g, "} ]").replace(/\}\s*\{/g, "}, {");
+  };
+
+  elmts.applyButton.click(function() {
+    var json;
+
+    try {
+      json = elmts.textarea[0].value;
+      json = fixJson(json);
+      json = JSON.parse(json);
+    } catch (e) {
+      alert($.i18n._('core-project')["json-invalid"]+".");
+      return;
+    }
+
+	$.post(
+	    "command/core/importing-controller?" + $.param({
+	      "controller": "ohdfs/ohdfs-importing-controller",
+	      "subCommand": "apply-transforms-hdfs",
+	      "jobID": getReqParam("project"),
+	      "jsonOp": JSON.stringify(json),
+	      "everythingChanged": "true"
+         }),
+	    null,
+	    function(o) {
+	    	 Refine.update({ everythingChanged: true });
+	    },
+	    "json"
+  	);
+
+	/*
+    Refine.postCoreProcess(
+        "apply-operations-hdfs",
+        {},
+        { operations: JSON.stringify(json) },
+        { everythingChanged: true },
+        {
+          onDone: function(o) {
+            if (o.code == "pending") {
+              // Something might have already been done and so it's good to update
+              Refine.update({ everythingChanged: true });
+            }
+          }
+        }
+    );
+    */
+
+    DialogSystem.dismissUntil(level - 1);
+  });
+
+  elmts.cancelButton.click(function() {
+    DialogSystem.dismissUntil(level - 1);
+  });
+
+  var level = DialogSystem.showDialog(frame);
+
+  elmts.textarea.focus();
+};
+
 
 HistoryPanel.prototype._onClickHistoryEntry = function(evt, entry, lastDoneID) {
   var self = this;
@@ -282,13 +362,13 @@ HistoryPanel.prototype._showExtractOperationsDialog = function(json) {
 
 HistoryPanel.prototype._showApplyOperationsDialog = function() {
   var self = this;
-  var frame = $(DOM.loadHTML("ohdfs", "scripts/project/history-apply-dialog.html"));
+  var frame = $(DOM.loadHTML("core", "scripts/project/history-apply-dialog.html"));
   var elmts = DOM.bind(frame);
   
-  elmts.dialogHeader.html($.i18n._('ohdfs-apply')["apply-operation-hdfs"]);
+  elmts.dialogHeader.html($.i18n._('core-project')["apply-operation"]);
   elmts.or_proj_pasteJson.html($.i18n._('core-project')["paste-json"]);
   
-  elmts.applyButton.html($.i18n._('ohdfs-apply')["perform-op-hdfs"]);
+  elmts.applyButton.html($.i18n._('core-project')["perform-op"]);
   elmts.cancelButton.html($.i18n._('core-buttons')["cancel"]);
 
   var fixJson = function(json) {
@@ -354,3 +434,8 @@ $.get(
     },
     "json"
   );
+  
+  function getReqParam(name){
+   if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
+      return decodeURIComponent(name[1]);
+  }

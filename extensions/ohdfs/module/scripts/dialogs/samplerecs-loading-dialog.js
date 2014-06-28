@@ -40,7 +40,6 @@ SampleRecordsLoadingDialog.prototype._createDialog = function() {
   var self = this;
   var dialog = $(DOM.loadHTML("ohdfs", "scripts/dialogs/samplerecs-loading-dialog.html"));
   this._elmts = DOM.bind(dialog);
-  this._elmts.cancelButton.click(function() { self._dismiss(); });
 
   this._elmts.dialogHeader.text("Sampling Setup");
   this._elmts.cancelButton.text($.i18n._('fb-buttons')["cancel"]);
@@ -61,6 +60,12 @@ SampleRecordsLoadingDialog.prototype._createDialog = function() {
 		  }
   });
   
+  this._elmts.cancelButton.click(function() {
+	//SampleRecordsLoadingDialog.dismiss();	
+	DialogSystem.dismissAll();
+
+  });
+ 
   this._elmts.okButton.click(function() { 
 	  // Submit Sampling Job.
 	  $.post(

@@ -1,59 +1,24 @@
-<div class="dialog-frame" style="width: 800px;">
+<div class="dialog-frame" style="width: 80%;">
   <div class="dialog-header" bind="dialogHeader"></div>
    
   <div class="dialog-body" bind="dialogBody">
 		
-		<table width="100%" >
-  			<tr>
-  				<td width="50%" style="padding: 10px;"> Total Records: </td>
-  				<td width="50%" style="padding: 10px;"> <span id="recDiv">122334343434</span> Rows </td>
-  			</tr>
-  			
-  			<tr>
-  				<td width="50%" style="padding: 10px;"> Sampling Types: </td>
-  				<td width="50%" style="padding: 10px;"> 
-  					 <select id="sampleTypes" name="sampleTypes" bind="sampleTypes">
-  					 	<option value="SBT">Sampling Bucketized Table</option>
-  					 	<option value="BS">Block Sampling</option>
-  					 </select> 
-  				</td>
-  			</tr>
-  			
-  			<tr id="row1">
-  				<td width="50%" style="padding: 10px;"> Total Number of Buckets: </td>
-  				<td width="50%" style="padding: 10px;"> 
-  					 <input id="totalBuckets" type="text" value="" > 
-  				</td>
-  			</tr>
-  			
-  			<tr id="row2">
-  				<td width="50%" style="padding: 10px;"> Sample on: </td>
-  				<td width="50%" style="padding: 10px;"> 
-  					 <select id="sampleCol" name="sampleCol">
-  					 	<option value="row">Entire Row</option>
-  					 	<option value="1">oshpd_id</option>
-  					 	<option value="2">oshpd_id2</option>
-  					 	<option value="3">oshpd_id3</option>
-  					 </select> 
-  				</td>
-  			</tr>
-  			
-  			
-  			<tr id="row3">
-  				<td width="50%" style="padding: 10px;"> Sample Percent: </td>
-  				<td width="50%" style="padding: 10px;"> 
-  					 <input id="samplePercent" type="text" value=""> 
-  				</td>
-  			</tr>
-  			
-  			
-  			
-  			
-  		</table>
-  		
-  		
-  		
-  		
+		<table class="data-table" id="jobStatusTbl">
+			<thead>
+			<tr>
+				<th style="width: 5%">S. No</th>
+				<th  style="width: 10%">Job ID</th>
+				<th  style="width: 25%">Name</th>
+				<th  style="width: 10%">Start Time</th>
+				<th  style="width: 10%">End Time</th>
+				<th  style="width: 10%">Status</th>
+				<th  style="width: 10%">Actions</th>
+			</thead>
+			
+			<tbody>
+			</tbody>
+		</table>
+		
   		
   </div>
   

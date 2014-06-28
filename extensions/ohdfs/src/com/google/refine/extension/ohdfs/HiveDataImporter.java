@@ -164,7 +164,7 @@ public class HiveDataImporter {
                     rowsOfCells = getRowsOfCells(
                         hiveService,    
                         newBatchRowStart + 1, // convert to 1-based
-                        batchSize);
+                        batchSize,this.fileSource);
                     
                     batchRowStart = newBatchRowStart;
                     
@@ -185,7 +185,8 @@ public class HiveDataImporter {
         List<List<Object>> getRowsOfCells(
             HiveService hiveService,    
             int startRow, // 1-based
-            int rowCount
+            int rowCount,
+            String docUrl
         ) throws IOException, Exception {
             
             
@@ -193,7 +194,9 @@ public class HiveDataImporter {
             HiveDBConnection hdb = new HiveDBConnection();
             Connection con = hdb.getConnection();
             Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("select * from CA_NORTH_DISCHARGES_2007_STG limit 50");
+            String sql = "select * from "+ docUrl + " limit 50";
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
             ResultSetMetaData rsMeta = rs.getMetaData();
             rowsOfCells.add(new ArrayList<Object>());
             List<Object> headerRow= rowsOfCells.get(0);
@@ -203,7 +206,7 @@ public class HiveDataImporter {
             int cols = rsMeta.getColumnCount();
             int rows = 50; //hiveService.getRowCount();
             
-            for(int j=1; j<cols; j++)
+            for(int j=1; j<=cols; j++)
             {
                 headerRow.add(rsMeta.getColumnName(j));
             }
@@ -212,7 +215,7 @@ public class HiveDataImporter {
             while (rs.next()) {
                 rowsOfCells.add(new ArrayList<Object>());
                 List<Object> row = rowsOfCells.get(i);
-                for(int j=1; j<cols; j++)
+                for(int j=1; j<=cols; j++)
                 {
                     row.add(rs.getString(j));
                 }
