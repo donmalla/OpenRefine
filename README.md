@@ -1,11 +1,11 @@
-#OpenRefine
+#OpenRefine-HD
 
 [![Build Status](https://travis-ci.org/OpenRefine/OpenRefine.png?branch=master)](https://travis-ci.org/OpenRefine/OpenRefine)
 
-OpenRefine is a power tool that allows you to load data, understand it,
+OpenRefine-HD is a Big Data extension to OpenRefine - power tool that allows you to load data, understand it,
 clean it up, reconcile it to master database, and augment it with data coming from
-Freebase or other web sources. All with the comfort and privacy of 
-your own computer.
+Freebase or other web sources. OpenRefine-HD reads data present in HDFS cluster, and applies transformations on them, by spinning
+Mapreduce jobs.
 
 
 ###Where can I get more information?
@@ -14,11 +14,14 @@ Look at the OpenRefine web site http://openrefine.org and the wiki http://github
 
 ###Licensing and legal issues
 
+OpenRefine-HD is open source as well.
 OpenRefine is open source software and is licensed under the BSD license
 located in the [LICENSE.txt](LICENSE.txt). See that file also for information on open source
 libraries that OpenRefine depends on.
 
 ###Credits
+
+This software was created by Ratnakar Malla.
 
 This software was created by Metaweb Technologies, Inc. and originally written
 and conceived by David Huynh <dfhuynh@google.com>. Metaweb Technologies, Inc.
