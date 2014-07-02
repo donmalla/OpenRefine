@@ -37,6 +37,7 @@ $(function() {
   var cssLink = $("<link rel='stylesheet' type='text/css' href='extension/ohdfs/styles/flexigrid.css'>");
   $("head").append(cssLink);  
   $.getScript("/extension/ohdfs/styles/flexigrid.js", function(){ });
+  
 });
 
 
@@ -67,21 +68,25 @@ JobStatusDialog.prototype._createDialog = function() {
       null,
       function(data) {
          	var jobs = data["jobs"]["job"];
+		var j=0;
 		for(var i=0; i<jobs.length; i++)
 		{
+			j++;
 			var job = jobs[i];
-			var vStatus = (i%2==0?"even":"odd");
+			if (job.name=="ApplyJobMapper")
+			{
+			var vStatus = (j%2==0?"even":"odd");
 		        $('#jobStatusTbl > tbody:last').append('<tr class="' + vStatus + '">' +
-				'<td><div>' + i + '</div></td>' +
+				'<td><div>' + j + '</div></td>' +
 				'<td><div class="data-table-cell-content"> <span>' + job.id + '</span> </div></td>'+
 				'<td><div class="data-table-cell-content"> <span>' + job.name + '</span> </div></td>'+
 				'<td><div class="data-table-cell-content"> <span>' + job.startTime + '</span> </div></td>'+
 				'<td><div class="data-table-cell-content"> <span>' + job.finishTime + '</span> </div></td>'+
 				'<td><div class="data-table-cell-content"> <span>' + job.state + '</span> </div></td>'+
-				'<td><div class="data-table-cell-content"> <a href="#">Create Hive Table </a> &nbsp; <a href=""> Download File </a> </div></td>'+
+				'<td><div class="data-table-cell-content"> <a href="#" onClick="createHive()">Create Hive Table </a> </div></td>'+
 			'</tr>');	
 		}
-	
+		}
 		$("#jobStatusTbl th").each(function() {
   			$(this).attr("width", $(this).width());
 		});
@@ -94,3 +99,6 @@ JobStatusDialog.prototype._createDialog = function() {
   
 };  
 
+function createHive() {
+	
+} 

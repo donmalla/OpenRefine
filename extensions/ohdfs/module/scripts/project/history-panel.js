@@ -224,7 +224,7 @@ HistoryPanel.prototype._showApplyHDFSOperationsDialog = function() {
 	    "command/core/importing-controller?" + $.param({
 	      "controller": "ohdfs/ohdfs-importing-controller",
 	      "subCommand": "apply-transforms-hdfs",
-	      "jobID": getReqParam("project"),
+	      "projectId": getReqParam("project"),
 	      "jsonOp": JSON.stringify(json),
 	      "everythingChanged": "true"
          }),

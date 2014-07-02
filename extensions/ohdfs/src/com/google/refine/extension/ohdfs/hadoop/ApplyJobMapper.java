@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -13,6 +14,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.json.JSONException;
 
 import com.google.refine.commands.history.ApplyOperationsCommand;
+import com.google.refine.extension.ohdfs.OHDFSUtil;
 import com.google.refine.history.HistoryProcess;
 import com.google.refine.io.FileProjectManager;
 import com.google.refine.io.ProjectUtilities;
@@ -55,32 +57,46 @@ public class ApplyJobMapper extends Mapper<Object, Text, Text, Text> {
         return str + "-AAA";
     }
 
-    public String process(String fileDir, String projectID, String jsonString,String rowData)
+    public synchronized String process(String fileDir, String projectID, String jsonString,String rowData)
             throws Exception {
         Project project;
-
-        // File dir =
-        // TestUtils.createTempDirectory("c:\\temp\\openrefine-test-workspace-dir");
+        
+        try
+        {
+            FileUtils.cleanDirectory(new File("/tmp/openrefine/"+projectID+".project"));
+        }catch(Exception e) {
+            
+        }
+        
+        new File("/tmp/openrefine/"+projectID+".project").mkdirs();
+        
+        try
+        {
+        FileUtils.copyDirectory(new File("/tmp/openrefine/original/"+projectID+".project"), 
+                new File("/tmp/openrefine/"+projectID+".project"));
+        }catch(Exception e) {
+            
+        }
         System.out.println("Initializing Project Dir: " + fileDir + " START ");
         File dir = new java.io.File(fileDir);
         // dir.mkdirs();
         FileProjectManager.initialize(dir);
         System.out.println("Initializing Project Dir: " + fileDir + " DONE ");
-        
-        // System.out.println(FileProjectManager.singleton==null);
+        System.out.println(FileProjectManager.singleton==null);
         Long pid = Long.parseLong(projectID);
         project = ProjectUtilities.load(new File(dir.toString() + File.separator + pid + ".project"), pid);
-        FileProjectManager.singleton.registerProject(project, project.getMetadata());
-        Process process = new HistoryProcess(project, 0);
-        process.performImmediate();
+      FileProjectManager.singleton.registerProject(project, project.getMetadata());
+//        Process process = new HistoryProcess(project, 0);
+//        process.performImmediate();
         //project.processManager.queueProcess(process);
         
-        String[] r = rowData.split("\\t");
+
+        String[] r = rowData.split(",");
         Row row = project.rows.get(0);
         for(int i=0; i<r.length; i++)
         {
             com.google.refine.model.Cell cell = row.getCell(i);
-            com.google.refine.model.Cell cell2 = new com.google.refine.model.Cell(r[i],cell.recon);
+            com.google.refine.model.Cell cell2 = new com.google.refine.model.Cell(r[i],(cell!=null?cell.recon:null));
             row.setCell(i, cell2);
         }
         System.out.println("New Row: " + row);
@@ -112,10 +128,10 @@ public class ApplyJobMapper extends Mapper<Object, Text, Text, Text> {
     
     
     public static void main(String[] args) throws Exception {
-        String jsonString="[ { \"op\": \"core/text-transform\", \"description\": \"Text transform on cells in column address using expression value.toUppercase()\", \"engineConfig\": { \"facets\": [], \"mode\": \"row-based\" }, \"columnName\": \"address\", \"expression\": \"value.toUppercase()\", \"onError\": \"keep-original\", \"repeat\": false, \"repeatCount\": 10 } ]";
-        String projectID="2364863862308";
-        String fileDir = "c:\\temp\\ws2";
-        String rowData="2,Ratnakar";
+        String jsonString="[ { \"op\": \"core/text-transform\", \"description\": \"Text transform on cells in column address using expression value.toUppercase()\", \"engineConfig\": { \"facets\": [], \"mode\": \"row-based\" }, \"columnName\": \"text\", \"expression\": \"value.toUppercase()\", \"onError\": \"keep-original\", \"repeat\": false, \"repeatCount\": 10 } ]";
+        String projectID="1727051814178";
+        String fileDir = "/home/ratnakar/.local/share/openrefine";
+        String rowData="2,Kavi";
         String result = new ApplyJobMapper().process(fileDir,projectID,jsonString,rowData);
         System.out.println("ProcessedRow: " + result);
     }

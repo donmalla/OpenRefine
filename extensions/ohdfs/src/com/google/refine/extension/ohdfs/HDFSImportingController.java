@@ -1,5 +1,7 @@
 package com.google.refine.extension.ohdfs;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Writer;
@@ -7,18 +9,22 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.tools.tar.TarOutputStream;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONWriter;
@@ -31,6 +37,7 @@ import com.google.refine.importing.DefaultImportingController;
 import com.google.refine.importing.ImportingController;
 import com.google.refine.importing.ImportingJob;
 import com.google.refine.importing.ImportingManager;
+import com.google.refine.io.FileProjectManager;
 import com.google.refine.model.Project;
 import com.google.refine.util.JSONUtilities;
 import com.google.refine.util.ParsingUtilities;
@@ -40,6 +47,7 @@ import com.google.refine.util.ParsingUtilities;
 public class HDFSImportingController implements ImportingController {
 
     protected RefineServlet servlet;
+    public static Hashtable<String, String> cache = new  Hashtable<String, String>();
     
     @Override
     public void init(RefineServlet servlet) {
@@ -121,14 +129,27 @@ public class HDFSImportingController implements ImportingController {
     private void doApplyTransformsHDFS(
             HttpServletRequest request, HttpServletResponse response, Properties parameters)
                 throws ServletException, IOException {
-            
-            String jobID = request.getParameter("jobID"); 
-            String jsonOp = request.getParameter("jsonOp");
-            String fileName="rain.txt";
-            //in/rain/rain.txt output19992B
-            String inputPath="in/rain/"+fileName;
-            String outputPath="output/"+ fileName + "_" +  jobID+"_"+System.currentTimeMillis();
+            String projectId=request.getParameter("projectId");
             String projectPath="/tmp/openrefine";
+            String baseDir="/home/ratnakar/.local/share/openrefine/";
+            
+            //File workSpace = ((FileProjectManager)FileProjectManager.singleton).getWorkspaceDir();
+            //File projectDir = FileProjectManager.getProjectDir(workSpace, Long.parseLong(projectId));
+            
+            try {
+                OHDFSUtil.initializeRefineProject(baseDir, projectId, projectPath);
+            } catch (Exception e1) {
+               throw new IOException(e1);
+            }
+            
+            String jsonOp = request.getParameter("jsonOp");
+            String fileName="ca_discharges_north_1000.txt";
+            //in/rain/rain.txt output19992B
+            String inputPath="in/"+fileName;
+            String outputPath="output/"+ fileName + "_" +  projectId +"_"+System.currentTimeMillis();
+            
+            Writer w = response.getWriter();
+            String applicationID="-1";
             try
             {
                     String line="";
@@ -136,33 +157,50 @@ public class HDFSImportingController implements ImportingController {
                             " com.google.refine.extension.ohdfs.hadoop.ApplyJobMapperDriver " +
                             " " + inputPath +  " "+ outputPath + 
                             " " + projectPath + 
-                            " \"" + jsonOp.replaceAll("\"","\\\"") + "\"";
+                            " " + org.apache.commons.codec.binary.Base64.encodeBase64String(jsonOp.getBytes("UTF-8")) +
+                            " " + projectId;
                     System.out.println("Hadoop Cmd: " + cmd);
                     Process p = Runtime.getRuntime().exec(cmd);
                     BufferedReader bri = new BufferedReader
                         (new InputStreamReader(p.getInputStream()));
                       BufferedReader bre = new BufferedReader
                         (new InputStreamReader(p.getErrorStream()));
+                      Pattern pattern = Pattern.compile("application_(\\d+)_(\\d+)");
                       while ((line = bri.readLine()) != null) {
-                        System.out.println(line);
+                        //14/06/27 20:45:01 INFO impl.YarnClientImpl: Submitted application application_1403924895329_0002
+                          Matcher matcher = pattern.matcher(line);
+                          if (matcher.find()) {
+                              applicationID = matcher.group(); 
+                          }
+                          System.out.println(line);
                       }
                       bri.close();
                       while ((line = bre.readLine()) != null) {
-                        System.out.println(line);
+                        //14/06/27 20:45:01 INFO impl.YarnClientImpl: Submitted application application_1403924895329_0002  
+                          Matcher matcher = pattern.matcher(line);
+                          if (matcher.find()) {
+                              applicationID = matcher.group(); 
+                          }
+                          System.out.println(line);
                       }
                       bre.close();
                         
-                    p.waitFor();
-                    
-                    
+                     p.waitFor();
+                     
+                     JSONWriter writer = new JSONWriter(w);
+                     writer.object();
+                         writer.key("status"); writer.value("ok");
+                         writer.key("outputPath"); writer.value(outputPath);
+                         writer.key("applicationID"); writer.value(applicationID);
+                         writer.endObject();
                     //
                 
                     //Process process = 
                     /*
                     Job hadoopJob = ApplyJobMapperDriver.runJob(inputPath, outputPath, jsonOp, jobID, projectPath);
         
-                    Writer w = response.getWriter();
-                    JSONWriter writer = new JSONWriter(w);
+                   
+                    
                     writer.object();
                         writer.key("status"); writer.value("ok");
                         writer.key("jobID"); writer.value(jobID);
@@ -177,7 +215,8 @@ public class HDFSImportingController implements ImportingController {
                     e.printStackTrace();
                     throw new ServletException(e);
                 } finally {
-                    
+                    w.flush();
+                    w.close();
                 }
      }
     
@@ -214,16 +253,19 @@ public class HDFSImportingController implements ImportingController {
         JSONWriter writer = new JSONWriter(w);
         try
         {
-            HiveDBConnection hdb = new HiveDBConnection();
-            Connection con = hdb.getConnection();
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("select count(*) from CA_NORTH_DISCHARGES_2007_STG");
-            
-            writer.object();
-            while(rs.next())
+            if (cache.get("CA_NORTH_DISCHARGES_2007_STG_REC_COUNT")==null)
             {
-                writer.key("count"); writer.value(rs.getLong(1));
+                HiveDBConnection hdb = new HiveDBConnection();
+                Connection con = hdb.getConnection();
+                Statement stmt = con.createStatement();
+                ResultSet rs = stmt.executeQuery("select count(*) from CA_NORTH_DISCHARGES_2007_STG");
+                while(rs.next())
+                {
+                    cache.put("CA_NORTH_DISCHARGES_2007_STG_REC_COUNT", ""+rs.getLong(1));
+                }
             }
+            writer.object();
+            writer.key("count"); writer.value(cache.get("CA_NORTH_DISCHARGES_2007_STG_REC_COUNT"));
             writer.endObject();
         } catch (Exception e) {
             throw new ServletException(e);

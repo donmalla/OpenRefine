@@ -1,12 +1,9 @@
 package com.google.refine.extension.ohdfs.hadoop;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -76,14 +73,15 @@ public class ApplyJobMapperDriver {
     }
     
     public static void main(String[] args) throws Exception {
-        if (args.length != 4) {
-          System.out.println("usage: [input] [output] [openRefineDir] [jsonOp]");
+        if (args.length != 5) {
+          System.out.println("usage: [input] [output] [openRefineDir] [jsonOp] [projectID]");
           System.exit(-1);
         }
         // String jsonOp="[ { \"op\": \"core/column-addition\", \"description\": \"Create column UcaseText at index 2 based on column text using expression grel:value.toUppercase()\", \"engineConfig\": { \"facets\": [], \"mode\": \"row-based\" }, \"newColumnName\": \"UcaseText\", \"columnInsertIndex\": 2, \"baseColumnName\": \"text\", \"expression\": \"grel:value.toUppercase()\", \"onError\": \"set-to-blank\" } ]";
-        String jsonOp=args[3];
-        String projectID="1699415687416";
+        
         String fileDir = args[2];  //"/home/ratnakar/.local/share/openrefine";
+        String jsonOp= new String(org.apache.commons.codec.binary.Base64.decodeBase64(args[3]));
+        String projectID=args[4]; //"1699415687416";
         Job job = runJob(args[0],args[1],jsonOp,projectID,fileDir);
         System.out.println("********* job.getTrackingURL: " + job.getTrackingURL());
  }
