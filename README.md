@@ -4,9 +4,10 @@
 
 OpenRefine-HD is a Big Data extension to OpenRefine - power tool that allows you to load data, understand it,
 clean it up, reconcile it to master database, and augment it with data coming from
-Freebase or other web sources. OpenRefine-HD reads data present in HDFS cluster, and applies transformations on them, by spinning
-Mapreduce jobs.
+Freebase or other web sources. OpenRefine-HD reads data present in HDFS cluster, and applies transformations on them, by spinning Mapreduce jobs. The goal of OpenRefine-HD is to provide a scalable platform for cleaning the data, do exploratory data analysis , sample the data and perform model scoring, all these within the OpeRefine-HD tool.
 
+###Architecture diagram
+![Platform Archictecture](img/architecture.png)
 
 ###Where can I get more information?
 
@@ -14,14 +15,16 @@ Look at the OpenRefine web site http://openrefine.org and the wiki http://github
 
 ###Licensing and legal issues
 
-OpenRefine-HD is open source as well.
+
 OpenRefine is open source software and is licensed under the BSD license
 located in the [LICENSE.txt](LICENSE.txt). See that file also for information on open source
 libraries that OpenRefine depends on.
 
+OpenRefine-HD is open source as well, offered under the same license.
+
 ###Credits
 
-This software was created by Ratnakar Malla.
+This extension was created by Ratnakar Malla.
 
 This software was created by Metaweb Technologies, Inc. and originally written
 and conceived by David Huynh <dfhuynh@google.com>. Metaweb Technologies, Inc.
