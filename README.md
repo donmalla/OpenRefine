@@ -7,7 +7,7 @@ clean it up, reconcile it to master database, and augment it with data coming fr
 Freebase or other web sources. OpenRefine-HD reads data present in HDFS cluster, and applies transformations on them, by spinning Mapreduce jobs. The goal of OpenRefine-HD is to provide a scalable platform for cleaning the data, do exploratory data analysis , sample the data and perform model scoring, all these within the OpeRefine-HD tool.
 
 ###Architecture diagram
-![Platform Archictecture](img/architecture.png)
+![Platform Archictecture](openrefinehd.png)
 
 ###Where can I get more information?
 
